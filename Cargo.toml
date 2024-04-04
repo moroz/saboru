@@ -9,3 +9,4 @@ edition = "2021"
 ashpd = { version = "0.8.1", features = ["gtk4"] }
 async-channel = "2.2.0"
 gtk = { version = "0.8.1", package = "gtk4", features = ["v4_8"] }
+reqwest = { version = "0.11", default-features = false, features = ["rustls-tls"] }

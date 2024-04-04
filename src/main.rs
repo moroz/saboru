@@ -3,6 +3,8 @@ use std::rc::Rc;
 use std::thread;
 use std::time::Duration;
 
+use ashpd::desktop::account::UserInformation;
+use ashpd::WindowIdentifier;
 use gtk::builders::ButtonBuilder;
 use gtk::gio;
 use gtk::glib::{self, clone, closure_local};
@@ -36,15 +38,19 @@ fn build_ui_with_custom_button(app: &Application) {
 
     button.connect_clicked(move |button| {
         glib::spawn_future_local(clone!(@weak button => async move {
-            button.set_sensitive(false);
-            let enable_button = gio::spawn_blocking(move || {
-                let five_seconds = Duration::from_secs(5);
-                thread::sleep(five_seconds);
-                true
-            })
-            .await
-            .expect("Task needs to finish successfully.");
-            button.set_sensitive(enable_button);
+            let native = button.native().expect("Need to be able to get native.");
+            let identifier= WindowIdentifier::from_native(&native).await;
+            let request = UserInformation::request()
+                .reason("App would like to access user information.")
+                .identifier(identifier)
+                .send()
+                .await;
+
+            if let Ok(response) = request.and_then(|r| r.response()) {
+                println!("User name: {}" , response.name());
+            } else {
+                println!("Could not access user information.");
+            }
         }));
     });
 
