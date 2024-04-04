@@ -1,14 +1,13 @@
 use std::cell::Cell;
 use std::rc::Rc;
+use std::thread;
+use std::time::Duration;
 
 use gtk::builders::ButtonBuilder;
+use gtk::gio;
 use gtk::glib::{self, clone, closure_local};
 use gtk::{prelude::*, ApplicationWindow, Box, Button, Orientation};
 use gtk::{Application, Label};
-
-mod custom_button;
-
-use custom_button::CustomButton;
 
 const APP_ID: &str = "org.gtk_rs.HelloWorld1";
 
@@ -27,22 +26,26 @@ fn button() -> ButtonBuilder {
 }
 
 fn build_ui_with_custom_button(app: &Application) {
-    let button = CustomButton::with_label("Click me!");
-    button.set_margin_top(12);
-    button.set_margin_bottom(12);
-    button.set_margin_end(12);
-    button.set_margin_start(12);
+    let button = Button::builder()
+        .label("Click me")
+        .margin_end(12)
+        .margin_start(12)
+        .margin_bottom(12)
+        .margin_top(12)
+        .build();
 
-    button.connect_closure(
-        "max-number-reached",
-        false,
-        closure_local!(move |_button: CustomButton, number: i32| {
-            println!("The maximum number {} has been reached", number);
-        }),
-    );
+    button.connect_clicked(move |_| {
+        gio::spawn_blocking(move || {
+            println!("Started!");
+            let five_seconds = Duration::from_secs(5);
+            thread::sleep(five_seconds);
+            println!("Finished!");
+        });
+    });
+
     let window = ApplicationWindow::builder()
         .application(app)
-        .title("CustomButton demo")
+        .title("My GTK App")
         .child(&button)
         .build();
     window.present();
