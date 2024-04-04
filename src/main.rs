@@ -6,6 +6,10 @@ use gtk::glib::{self, clone};
 use gtk::{prelude::*, ApplicationWindow, Box, Button, Orientation};
 use gtk::{Application, Label};
 
+mod custom_button;
+
+use custom_button::CustomButton;
+
 const APP_ID: &str = "org.gtk_rs.HelloWorld1";
 
 fn main() -> glib::ExitCode {
@@ -14,17 +18,9 @@ fn main() -> glib::ExitCode {
     app.run()
 }
 
-fn button() -> ButtonBuilder {
-    Button::builder()
-        .margin_top(12)
-        .margin_bottom(12)
-        .margin_start(12)
-        .margin_end(12)
-}
-
 fn build_ui(app: &Application) {
-    let button_increase = button().label("Increase").build();
-    let button_decrease = button().label("Decrease").build();
+    let button_increase = CustomButton::with_label("Increase");
+    let button_decrease = CustomButton::with_label("Decrease");
     let label = Label::builder()
         .margin_end(12)
         .margin_start(12)
@@ -45,13 +41,21 @@ fn build_ui(app: &Application) {
         label.set_label(&number.get().to_string());
     }));
 
-    let layout_box = Box::builder().orientation(Orientation::Horizontal).build();
+    let layout_box = Box::builder()
+        .orientation(Orientation::Horizontal)
+        .margin_top(12)
+        .margin_bottom(12)
+        .margin_start(12)
+        .margin_end(12)
+        .build();
     layout_box.append(&button_decrease);
     layout_box.append(&label);
     layout_box.append(&button_increase);
 
     let window = ApplicationWindow::builder()
         .application(app)
+        .default_width(800)
+        .default_height(640)
         .title("My GTK App")
         .child(&layout_box)
         .build();
