@@ -34,14 +34,28 @@ fn build_ui_with_custom_button(app: &Application) {
         .margin_top(12)
         .build();
 
+    let (sender, receiver) = async_channel::bounded(1);
+
     button.connect_clicked(move |_| {
+        let sender = sender.clone();
+
         gio::spawn_blocking(move || {
-            println!("Started!");
+            sender
+                .send_blocking(false)
+                .expect("The channel needs to be open.");
             let five_seconds = Duration::from_secs(5);
             thread::sleep(five_seconds);
-            println!("Finished!");
+            sender
+                .send_blocking(true)
+                .expect("The channel needs to be open.")
         });
     });
+
+    glib::spawn_future_local(clone!(@weak button => async move {
+        while let Ok(enable_button) = receiver.recv().await {
+            button.set_sensitive(enable_button);
+        }
+    }));
 
     let window = ApplicationWindow::builder()
         .application(app)
