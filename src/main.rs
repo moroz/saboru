@@ -1,25 +1,41 @@
-use gtk::gio;
 use gtk::glib::{self};
-use gtk::prelude::*;
-use gtk::Application;
-
-mod task_object;
-mod task_row;
-mod window;
-
-use window::Window;
+use gtk::{gio, ApplicationWindow};
+use gtk::{prelude::*, Label, ListBox, PolicyType, ScrolledWindow};
+use gtk::{Application, Orientation};
 
 const APP_ID: &str = "org.gtk_rs.todo";
 
 fn main() -> glib::ExitCode {
-    gio::resources_register_include!("resources.gresource").expect("Failed to register resources.");
-
     let app = Application::builder().application_id(APP_ID).build();
     app.connect_activate(build_ui);
     app.run()
 }
 
 fn build_ui(app: &Application) {
-    let window = Window::new(app);
+    let list_box = ListBox::new();
+    for number in 0..=100 {
+        let label = Label::new(Some(&number.to_string()));
+        list_box.append(&label);
+    }
+
+    let scrolled_window = ScrolledWindow::builder()
+        .hscrollbar_policy(PolicyType::Never)
+        .width_request(300)
+        .child(&list_box)
+        .build();
+
+    let layout_box = gtk::Box::builder()
+        .orientation(Orientation::Horizontal)
+        .build();
+
+    layout_box.append(&scrolled_window);
+
+    let window = ApplicationWindow::builder()
+        .title("Saboru")
+        .width_request(1024)
+        .height_request(768)
+        .child(&layout_box)
+        .application(app)
+        .build();
     window.present();
 }
