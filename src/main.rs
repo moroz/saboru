@@ -1,5 +1,6 @@
 use std::cell::Cell;
 use std::rc::Rc;
+use std::sync::OnceLock;
 use std::thread;
 use std::time::Duration;
 
@@ -10,6 +11,7 @@ use gtk::gio;
 use gtk::glib::{self, clone, closure_local};
 use gtk::{prelude::*, ApplicationWindow, Box, Button, Orientation};
 use gtk::{Application, Label};
+use tokio::runtime::Runtime;
 
 const APP_ID: &str = "org.gtk_rs.HelloWorld1";
 
@@ -27,6 +29,11 @@ fn button() -> ButtonBuilder {
         .margin_end(12)
 }
 
+fn runtime() -> &'static Runtime {
+    static RUNTIME: OnceLock<Runtime> = OnceLock::new();
+    RUNTIME.get_or_init(|| Runtime::new().expect("Setting up tokio runtime failed."))
+}
+
 fn build_ui_with_custom_button(app: &Application) {
     let button = Button::builder()
         .label("Click me")
@@ -36,22 +43,23 @@ fn build_ui_with_custom_button(app: &Application) {
         .margin_top(12)
         .build();
 
-    button.connect_clicked(move |button| {
-        glib::spawn_future_local(clone!(@weak button => async move {
-            let native = button.native().expect("Need to be able to get native.");
-            let identifier= WindowIdentifier::from_native(&native).await;
-            let request = UserInformation::request()
-                .reason("App would like to access user information.")
-                .identifier(identifier)
-                .send()
-                .await;
+    let (sender, receiver) = async_channel::bounded(1);
 
-            if let Ok(response) = request.and_then(|r| r.response()) {
-                println!("User name: {}" , response.name());
-            } else {
-                println!("Could not access user information.");
-            }
+    button.connect_clicked(move |_| {
+        runtime().spawn(clone!(@strong sender => async move {
+            let response = reqwest::get("https://moroz.dev").await;
+            sender.send(response).await.expect("The channel needs to be open.");
         }));
+    });
+
+    glib::spawn_future_local(async move {
+        while let Ok(response) = receiver.recv().await {
+            if let Ok(response) = response {
+                println!("Status: {}", response.status());
+            } else {
+                println!("Could not make a `GET` request.");
+            }
+        }
     });
 
     let window = ApplicationWindow::builder()
