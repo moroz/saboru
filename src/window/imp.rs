@@ -1,13 +1,27 @@
 use glib::subclass::InitializingObject;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk::{glib, Button, CompositeTemplate};
+use gtk::{glib, CompositeTemplate};
+use std::cell::Cell;
+
+use crate::custom_button::CustomButton;
 
 #[derive(CompositeTemplate, Default)]
 #[template(resource = "/org/gtk_rs/example/window.ui")]
 pub struct Window {
     #[template_child]
-    pub button: TemplateChild<Button>,
+    pub button: TemplateChild<CustomButton>,
+    pub number: Cell<i32>,
+}
+
+#[gtk::template_callbacks]
+impl Window {
+    #[template_callback]
+    fn handle_button_clicked(&self, button: &CustomButton) {
+        let number_increased = self.number.get() + 1;
+        self.number.set(number_increased);
+        button.set_label(&number_increased.to_string());
+    }
 }
 
 #[glib::object_subclass]
@@ -18,6 +32,7 @@ impl ObjectSubclass for Window {
 
     fn class_init(klass: &mut Self::Class) {
         klass.bind_template();
+        klass.bind_template_callbacks();
     }
 
     fn instance_init(obj: &InitializingObject<Self>) {
@@ -25,15 +40,7 @@ impl ObjectSubclass for Window {
     }
 }
 
-impl ObjectImpl for Window {
-    fn constructed(&self) {
-        self.parent_constructed();
-
-        self.button.connect_clicked(move |button| {
-            button.set_label("Hello World!");
-        });
-    }
-}
+impl ObjectImpl for Window {}
 
 impl WidgetImpl for Window {}
 

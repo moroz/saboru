@@ -3,7 +3,8 @@
   <template class="MyGtkAppWindow" parent="GtkApplicationWindow">
     <property name="title">My GTK App</property>
     <child>
-      <object class="GtkButton" id="button">
+      <object class="MyGtkAppCustomButton" id="button">
+        <signal name="clicked" handler="handle_button_clicked" swapped="true" />
         <property name="label">請點擊我</property>
         <property name="margin-top">24</property>
         <property name="margin-bottom">24</property>

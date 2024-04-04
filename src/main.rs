@@ -3,6 +3,7 @@ use gtk::glib::{self};
 use gtk::prelude::*;
 use gtk::Application;
 
+mod custom_button;
 mod window;
 
 use window::Window;
