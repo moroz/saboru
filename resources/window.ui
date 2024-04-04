@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="MyGtkAppWindow" parent="GtkApplicationWindow">
+    <property name="title">My GTK App</property>
+    <child>
+      <object class="GtkButton" id="button">
+        <property name="label">請點擊我</property>
+        <property name="margin-top">24</property>
+        <property name="margin-bottom">24</property>
+        <property name="margin-start">24</property>
+        <property name="margin-end">24</property>
+      </object>
+    </child>
+  </template>
+</interface>
+
