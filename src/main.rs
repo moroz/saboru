@@ -1,6 +1,7 @@
+use gtk::gdk::Display;
 use gtk::glib::{self};
-use gtk::{gio, ApplicationWindow, NoSelection};
-use gtk::{prelude::*, Label, ListBox, PolicyType, ScrolledWindow};
+use gtk::{gio, ApplicationWindow, CssProvider};
+use gtk::{prelude::*, PolicyType, ScrolledWindow};
 use gtk::{Application, Orientation};
 use sidebar_item::SidebarItem;
 use sidebar_row::SidebarRow;
@@ -12,8 +13,20 @@ mod sidebar_row;
 
 fn main() -> glib::ExitCode {
     let app = Application::builder().application_id(APP_ID).build();
+    app.connect_startup(|_| load_css());
     app.connect_activate(build_ui);
     app.run()
+}
+
+fn load_css() {
+    let provider = CssProvider::new();
+    provider.load_from_data(include_str!("css/style.css"));
+
+    gtk::style_context_add_provider_for_display(
+        &Display::default().unwrap(),
+        &provider,
+        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+    );
 }
 
 fn build_ui(app: &Application) {
@@ -45,6 +58,7 @@ fn build_ui(app: &Application) {
     let scrolled_window = ScrolledWindow::builder()
         .hscrollbar_policy(PolicyType::Never)
         .width_request(300)
+        .css_classes(["sidebar"])
         .child(&list_view)
         .build();
 

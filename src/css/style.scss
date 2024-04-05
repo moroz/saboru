@@ -1,0 +1,34 @@
+window {
+  font-family: sans-serif;
+}
+
+.sidebar {
+  color: #bcbdd0;
+}
+
+.sidebar listview {
+  background: hsl(226, 23%, 11%);
+}
+
+.sidebar row {
+  cursor: pointer;
+}
+
+row.activatable:selected {
+  background: transparent;
+  background-color: hsl(226, 23%, 20%);
+}
+
+row.activatable:selected:hover {
+  background: transparent;
+  background-color: hsl(226, 23%, 25%);
+}
+
+.sidebar-row {
+  font-size: 1.25em;
+}
+
+.sidebar-row image {
+  background: salmon;
+  border-radius: 5px;
+}
