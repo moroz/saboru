@@ -1,10 +1,13 @@
 use gtk::gdk::Display;
+use gtk::glib::clone;
 use gtk::glib::{self};
 use gtk::{gio, ApplicationWindow, CssProvider};
 use gtk::{prelude::*, PolicyType, ScrolledWindow};
 use gtk::{Application, Orientation};
 use sidebar_item::SidebarItem;
 use sidebar_row::SidebarRow;
+
+use crate::sidebar_item::SidebarItemData;
 
 const APP_ID: &str = "org.gtk_rs.todo";
 
@@ -32,8 +35,8 @@ fn load_css() {
 fn build_ui(app: &Application) {
     let contacts: Vec<&str> = vec!["Alice", "Bob"];
     let model = gio::ListStore::new::<SidebarItem>();
-    for contact in contacts {
-        model.append(&SidebarItem::new(contact.to_string()));
+    for (index, name) in contacts.iter().enumerate() {
+        model.append(&SidebarItem::new(name.to_string(), (index + 1) as i64));
     }
 
     let factory = gtk::SignalListItemFactory::new();
@@ -52,6 +55,13 @@ fn build_ui(app: &Application) {
     });
 
     let selection_model = gtk::SingleSelection::new(Some(model));
+
+    selection_model.connect_selection_changed(move |selection, _, _| {
+        if let Some(selected_item) = selection.selected_item() {
+            let item = selected_item.downcast_ref::<SidebarItem>().unwrap();
+            println!("{:?}", item.property::<i64>("id"));
+        }
+    });
 
     let list_view = gtk::ListView::new(Some(selection_model), Some(factory));
 

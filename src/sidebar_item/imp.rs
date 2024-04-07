@@ -9,6 +9,7 @@ use super::SidebarItemData;
 #[derive(Properties, Default)]
 #[properties(wrapper_type = super::SidebarItem)]
 pub struct SidebarItem {
+    #[property(name = "id", get, set, type = i64, member = id)]
     #[property(name = "label", get, set, type = String, member = label)]
     pub data: RefCell<SidebarItemData>,
 }
